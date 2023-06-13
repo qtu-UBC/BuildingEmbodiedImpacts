@@ -106,19 +106,21 @@ Define functions
 
 ## define a function for scenario analysis
 def scenario_analysis(raw_bom_df: pd.DataFrame, recipe_sheets: Dict, mat_impact_df: pd.DataFrame, mat_name_match_dict: Dict,
-    strategy_info: str, file_name_retained: List):
+    strategy_info: str, file_name_retained: List, **kwargs) -> None:
     """
     [Caution] some hard-coded variables
         - 'MAT_': refers to the label added to the raw BoM df during data preparation
         - 'WB_BoM': refers to whole-building level BoM.
         - unit_convert_dict: a dict contains the conversion factors for certain materials (e.g., kg -> m3 for wood)
-    kwargs:
+    Input params:
         - raw_bom_df: original BoM imported from excel sheet, pd.DataFrame
         - recipe_sheets: contains all the individual recipes, list
         - mat_impact_df: contains material names (by different specification lvl) and corresponding impact factors (e.g., kg CO2-eq/unit), pd.DataFrame
         - mat_name_match_dict: contains the {bom_mat_name: name_in_mat_impact_sheet | location | unit}, dict
         - strategy_info: contains strategy information (e.g., 'baseline_0_0'), str
         - file_name_retained: contains the keywords to filter out the irrelevant files before merging sheets (e.g., ['WB_BoM','baseline']), list
+        **kwargs
+            - strategy_dict: contains {strategy name: [list of changes]}, e.g., {'change recycled content': [{'ALL': 0.2}]}, dict
     """
 
     # remove the 'MAT_' from bom names
@@ -140,9 +142,14 @@ def scenario_analysis(raw_bom_df: pd.DataFrame, recipe_sheets: Dict, mat_impact_
         if tmp_key in all_recipes_results_dict.keys(): # skip the calculation, if the results are already available from preivous execution
             continue
         else:
-            total_impacts_by_mat, archetype_labels_list,impact_category_idx_list = impact_calc_wrapper_manual(recipe,raw_bom_df_cleaned, 
-                                                                    mat_impact_df=mat_impact_df,mat_name_match_dict=mat_name_match_dict,
-                                                                    unit_convert_dict=unit_convert_dict)
+            if 'strategy_dict' in kwargs:
+                total_impacts_by_mat, archetype_labels_list,impact_category_idx_list = impact_calc_wrapper_manual(recipe,raw_bom_df_cleaned, 
+                                                                        mat_impact_df=mat_impact_df,mat_name_match_dict=mat_name_match_dict,
+                                                                        unit_convert_dict=unit_convert_dict, strategy_dict=kwargs['strategy_dict'])
+            else:
+                total_impacts_by_mat, archetype_labels_list,impact_category_idx_list = impact_calc_wrapper_manual(recipe,raw_bom_df_cleaned, 
+                                                                        mat_impact_df=mat_impact_df,mat_name_match_dict=mat_name_match_dict,
+                                                                        unit_convert_dict=unit_convert_dict)
             all_recipes_results_dict[tmp_key] = [total_impacts_by_mat] # store_results function expects list as the argument, if use list(), it will return a list of column name instead
 
     # save results to local folder
@@ -190,6 +197,17 @@ if __name__ == '__main__':
         recipe_sheets.append(tmp_sheet)
 
     # [Scenario] Baseline
-    scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
-        file_name_retained=['WB_BoM','baseline'])
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
+    #     file_name_retained=['WB_BoM','baseline'])
 
+    # [Scenario] 20% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
+    #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': [{'ALL': 0.2}]})
+
+    # [Scenario] 50% virgin materials replaced by recycled materials
+    scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_5', 
+        file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': [{'ALL': 0.5}]})
+
+    # [Scenario] 80% virgin materials replaced by recycled materials
+    scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_8', 
+        file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': [{'ALL': 0.8}]})
