@@ -153,7 +153,9 @@ def archetype_gen(bom_df_processed: pd.DataFrame, recipe: pd.DataFrame, select_e
 		archetype_build_type,archetype_loc = recipe['building_type'].values[0],recipe['Region'].values[0]
 		for idx in archetype_idx:
 			archetype_labels.append("_".join([str(archetype_build_type),str(archetype_loc),str(idx)]))
-
+		logger.info(" ++++++ ")
+		logger.info(f"idx of archetypes in original bom file is: {archetype_idx}")
+		logger.info(" ++++++ ")
 		return archetype_BoM_df, archetype_idx, archetype_labels
 
 
@@ -271,6 +273,9 @@ def calc_impact_multi(mat_name_match_dict: dict, mat_impact_df: pd.DataFrame, bo
 
 	# make a slice of bom_quantity_df to only keep the columns of bom names
 	slice_bom_quantity_df = bom_quantity_df[list(mat_name_match_dict.keys())].copy()
+	logger.info(" ++++++ ")
+	logger.info(f"idx of the slice is: {slice_bom_quantity_df.index.tolist()}")
+	logger.info(" ++++++ ")
 
 	# perform unit conversion, if needed
 	if 'unit_convert_dict' in kwargs:
@@ -350,6 +355,9 @@ def calc_impact_multi(mat_name_match_dict: dict, mat_impact_df: pd.DataFrame, bo
 			tmp_results = slice_bom_quantity_df[bom_name].apply(lambda x: [np.repeat('no value due no to matching',n_lcia)])
 		tmp_df_list.append(tmp_results)
 	total_impacts_by_mat = pd.concat(tmp_df_list,axis=1)
+	logger.info(" ++++++ ")
+	logger.info(f"idx of total_impacts_by_mat is: {total_impacts_by_mat.index.tolist()}")
+	logger.info(" ++++++ ")
 
 	return total_impacts_by_mat, impact_category_idx_list
 
@@ -386,10 +394,12 @@ def store_results(save_name: str, storage_path: str, results_to_store_list: list
 				# add a new column of impact category name
 			df['impact assessment method'] = impact_category_idx_tuple[1]
 			# concate the recipe df and clean up
+			tmp_len = len(df)
 			df = pd.concat([df,recipe], axis=1)
-			for col in recipe.columns:
-				df[col] = df[col].fillna(df[col].loc[0]) #'0' is an index label in this case
-			df = df.drop(0) # 0-index where NaN for all mat columns but values for recipe attributes (created after concate)
+			if len(df) != tmp_len: # if idx of df does not start with 0, then the len of df will be different after concat with recipe (which is always 0-index)
+				for col in recipe.columns:
+					df[col] = df[col].fillna(df[col].loc[0]) #'0' is an index label in this case, as the 'recipe' df is always 0-index
+				df = df.drop(0) # 0-index (created after concat) where there is NaN for all mat columns but are values for recipe attributes 
 			df.to_excel(writer, sheet_name=f'sheet_{idx}_{impact_category_idx_tuple[0]}')
 			# restore df to its original content
 			df = restore_df.copy()
@@ -402,10 +412,10 @@ def store_results(save_name: str, storage_path: str, results_to_store_list: list
 ## define a function to merge result sheets
 def merge_sheets(storage_path: str, path_to_sheets: str, one_sheet_name: str, impact_category_dict: dict, **kwargs) -> None:
 	"""
-	This function loads the .xlsx sheets of interest, merge and reformat them into a new .xlsx sheet. Current format for the resulting .xlsx sheets:
-	- named by 'multiple mapping retained_x', where 'x' refers to the rank (0 being the hightest score for matching between BoM name and impact factor name)
+	This function loads the .xlsx sheets of interest (i.e., results of individual recipes), merge and reformat them into a new .xlsx sheet. 
+		Current format for the resulting .xlsx sheets:
 	- each sheet contain # of tabs: each tab contains the results for a specific impact category
-	- within each tab: rows -> all building archetypes from a given database, cols -> BoM materials + attributes of recipe template (e.g., Occupation, building_type)
+	- within each tab: rows -> building archetypes from all recipes of a given database, cols -> BoM materials + attributes of recipe template (e.g., Occupation, building_type)
 
 	Input params:
 	- storage_path: path to the destination folder for storage, str
@@ -481,8 +491,8 @@ def process_for_plot(raw_df: pd.DataFrame, mat_cols: list, scenario_info: dict) 
 	# initiate the output
 	df_to_plot = raw_df.copy()
 
-	# change "Unnamed: 0" to "building_ID"
-	df_to_plot.rename(columns={"Unnamed: 0": "building_ID"},inplace=True)
+	# change "Unnamed: 0.1" to "building_ID"
+	df_to_plot.rename(columns={"Unnamed: 0.1": "building_ID"},inplace=True)
 	# calculate total impacts
 	df_to_plot['TOTAL impacts'] = df_to_plot[mat_cols].apply(lambda x: pd.to_numeric(x,errors='coerce')).sum(skipna=True, axis=1)
 	# add scenario info: e.g., 'RC' (i.e., change recycled content): 0.2
