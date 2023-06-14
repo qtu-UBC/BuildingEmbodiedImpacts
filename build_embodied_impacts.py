@@ -12,7 +12,7 @@ This script fulfills the following purposes
 Import libraries
 ================
 """
-from utilities.helper_funcs import recipe_sheets_gen, impact_calc_wrapper_manual, store_results, merge_sheets
+from utilities.helper_funcs import recipe_sheets_gen, impact_calc_wrapper_manual, store_results, merge_sheets,process_for_plot
 from config import config
 import pandas as pd
 import numpy as np
@@ -49,7 +49,8 @@ recipe_template_df.reset_index(drop=True, inplace=True)
 log_path = config.LOG_OUTPUT_PATH
 storage_path = config.RESULTS_OUTPUT_PATH
 
-# [for Heeren & Fishman 2018]
+
+""" SPECIAL SETUP for Heeren & Fishman 2018 """
 # format the material column headers
 mat_name_headers = "steel,copper,aluminum,unspecified_metal,wood,paper_cardboard,straw,concrete,cement,aggregates,brick,mortar_plaster,mineral_fill,plaster_board_gypsum,Adobe,Asphalt,Bitumen,natural_stone,cement_asbestos,Clay,siding_unspecified,Ceramics,Glass,Plastics,Polystyrene,PVC,Lineoleum,Carpet,Heraklith,Mineral_wool,insulation_unspecified,other_unspecified_material"
 mat_name_headers = [name.strip() for name in mat_name_headers.split(",")]
@@ -63,7 +64,7 @@ for new_col_name in recycled_mat_names:
 # remove the whitespace in dataframe
 raw_bom_df = raw_bom_df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
-# remove the rows where both 'Occupation' and 'building_type' have missing values 
+# remove the rows where both 'Occupation' and 'building_type' have missing values -> this removes 22 rows from the original 578 rows
 raw_bom_df = raw_bom_df.query('Occupation.notnull() | building_type.notnull()')
 
 # remove the rows where 'Occupation' type is 'residential, non-residential'
@@ -93,8 +94,33 @@ raw_bom_df['Country'].replace(correct_dict,inplace=True)
 
 # replace 'aluminum' in column name with 'aluminium'
 for col in raw_bom_df.columns:
-  if 'aluminum' in col:
-    raw_bom_df.rename(columns={col:col.replace('aluminum','aluminium')},inplace=True) 
+    if 'aluminum' in col:
+        raw_bom_df.rename(columns={col:col.replace('aluminum','aluminium')},inplace=True) 
+
+# material col headers
+mat_cols = ['steel', 'copper', 'aluminium',
+       'unspecified_metal', 'wood', 'paper_cardboard', 'straw', 'concrete',
+       'cement', 'aggregates', 'brick', 'mortar_plaster', 'mineral_fill',
+       'plaster_board_gypsum', 'Adobe', 'Asphalt', 'Bitumen', 'natural_stone',
+       'cement_asbestos', 'Clay', 'siding_unspecified', 'Ceramics', 'Glass',
+       'Plastics', 'Polystyrene', 'PVC', 'Lineoleum', 'Carpet', 'Heraklith',
+       'Mineral_wool', 'insulation_unspecified', 'other_unspecified_material',
+       'steel_recycled', 'copper_recycled', 'aluminium_recycled',
+       'unspecified_metal_recycled', 'wood_recycled',
+       'paper_cardboard_recycled', 'straw_recycled', 'concrete_recycled',
+       'cement_recycled', 'aggregates_recycled', 'brick_recycled',
+       'mortar_plaster_recycled', 'mineral_fill_recycled',
+       'plaster_board_gypsum_recycled', 'Adobe_recycled', 'Asphalt_recycled',
+       'Bitumen_recycled', 'natural_stone_recycled',
+       'cement_asbestos_recycled', 'Clay_recycled',
+       'siding_unspecified_recycled', 'Ceramics_recycled', 'Glass_recycled',
+       'Plastics_recycled', 'Polystyrene_recycled', 'PVC_recycled',
+       'Lineoleum_recycled', 'Carpet_recycled', 'Heraklith_recycled',
+       'Mineral_wool_recycled', 'insulation_unspecified_recycled',
+       'other_unspecified_material_recycled', ]
+
+lcia_of_interest = 'ReCiP_no LT_ GWP100' # can switch to other impact cateogry of interest
+
 save_xlsx_name = 'all_archetypes_included_HF.xlsx'
 
 
@@ -196,18 +222,61 @@ if __name__ == '__main__':
         tmp_sheet.reset_index(drop=True, inplace=True)
         recipe_sheets.append(tmp_sheet)
 
-    # [Scenario] Baseline
+    # # [Scenario] Baseline
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
     #     file_name_retained=['WB_BoM','baseline'])
 
-    # [Scenario] 20% virgin materials replaced by recycled materials
+    """ === Recycled Content (RC) === """
+    # # [Scenario] 20% virgin materials replaced by recycled materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
     #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': [{'ALL': 0.2}]})
 
-    # [Scenario] 50% virgin materials replaced by recycled materials
-    scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_5', 
-        file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': [{'ALL': 0.5}]})
+    # # [Scenario] 50% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_5', 
+    #     file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': [{'ALL': 0.5}]})
 
-    # [Scenario] 80% virgin materials replaced by recycled materials
-    scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_8', 
-        file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': [{'ALL': 0.8}]})
+    # # [Scenario] 80% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_8', 
+    #     file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': [{'ALL': 0.8}]})
+
+    # [process data for plot]
+    # merged sheets of interest [Hard-coded]
+    merged_xlsx_of_interest = ['baseline_0_0_2023-06-14_06.xlsx','RC_0_2_2023-06-14_06.xlsx','RC_0_5_2023-06-14_06.xlsx',
+    'RC_0_8_2023-06-14_06.xlsx']
+
+    # dict to store the processed df for plot
+    df_to_plot_dict = {}
+
+    # loop over each sheet of interest
+    for merged_sheet_name in merged_xlsx_of_interest:
+        # load xlsx file from drive
+        loaded_sheet_dict = pd.read_excel(os.path.sep.join([storage_path,merged_sheet_name]),sheet_name=None)
+        # scenario information
+        tmp = merged_sheet_name.split("_")
+        # quick hack [Hard-coded]
+        if tmp[0] == 'baseline':
+            tmp[0] = 'RC'
+        scenario_info = {tmp[0]: float(".".join([tmp[1],tmp[2]]))}
+        # feed the lcia sheet of interest to processing function [defined at the begining of this script]
+        processed_df = process_for_plot(loaded_sheet_dict[lcia_of_interest],mat_cols,scenario_info) # mat_cols defined at beginning of this script
+        # add processed df to the dict
+        df_to_plot_dict[merged_sheet_name] = processed_df
+
+    # [save the results to a single file]
+    # get the current date and time
+    now = datetime.datetime.now()
+    # format the date and time as a string
+    date_string = now.strftime("%Y-%m-%d_%H")
+
+    file_save_name = "_".join(['RC_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
+    file_save_name = os.path.sep.join([storage_path, file_save_name])
+
+    # create the ExcelWriter obj
+    writer = pd.ExcelWriter(file_save_name, engine='xlsxwriter')
+
+    # Loop through the dictionary and save each DataFrame to a separate sheet
+    for sheet_name, df in df_to_plot_dict.items():
+        df.to_excel(writer, sheet_name=sheet_name)
+
+    # Save the Excel file
+    writer.save()
