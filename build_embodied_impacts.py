@@ -119,8 +119,6 @@ mat_cols = ['steel', 'copper', 'aluminium',
        'Mineral_wool_recycled', 'insulation_unspecified_recycled',
        'other_unspecified_material_recycled', ]
 
-lcia_of_interest = 'ReCiP_no LT_ GWP100' # can switch to other impact cateogry of interest
-
 save_xlsx_name = 'all_archetypes_included_HF.xlsx'
 
 
@@ -247,36 +245,40 @@ if __name__ == '__main__':
     # dict to store the processed df for plot
     df_to_plot_dict = {}
 
-    # loop over each sheet of interest
-    for merged_sheet_name in merged_xlsx_of_interest:
-        # load xlsx file from drive
-        loaded_sheet_dict = pd.read_excel(os.path.sep.join([storage_path,merged_sheet_name]),sheet_name=None)
-        # scenario information
-        tmp = merged_sheet_name.split("_")
-        # quick hack [Hard-coded]
-        if tmp[0] == 'baseline':
-            tmp[0] = 'RC'
-        scenario_info = {tmp[0]: float(".".join([tmp[1],tmp[2]]))}
-        # feed the lcia sheet of interest to processing function [defined at the begining of this script]
-        processed_df = process_for_plot(loaded_sheet_dict[lcia_of_interest],mat_cols,scenario_info) # mat_cols defined at beginning of this script
-        # add processed df to the dict
-        df_to_plot_dict[merged_sheet_name] = processed_df
+    # loop over lcia of interest
+    lcia_of_interest_list = ['ReCiP_no LT_ GWP100','ReCiP_no LT_ WDP','ReCiP_no LT_ FDP'] # can add other impact cateogry of interest
+    for lcia_of_interest in lcia_of_interest_list:
+        # loop over each xlsx sheet of interest
+        for merged_sheet_name in merged_xlsx_of_interest:
+            # load xlsx file from drive
+            loaded_sheet_dict = pd.read_excel(os.path.sep.join([storage_path,merged_sheet_name]),sheet_name=None)
+            # scenario information
+            tmp = merged_sheet_name.split("_")
+            # quick hack [Hard-coded]
+            if tmp[0] == 'baseline':
+                tmp[0] = 'RC'
+            scenario_info = {tmp[0]: float(".".join([tmp[1],tmp[2]]))}
+            # feed the lcia sheet of interest to processing function 
+            processed_df = process_for_plot(loaded_sheet_dict[lcia_of_interest],mat_cols,scenario_info) # mat_cols defined at beginning of this script
+            # add processed df to the dict
+            df_to_plot_dict[merged_sheet_name] = processed_df
 
-    # [save the results to a single file]
-    # get the current date and time
-    now = datetime.datetime.now()
-    # format the date and time as a string
-    date_string = now.strftime("%Y-%m-%d_%H")
+        # [save the results to a single file]
+        # get the current date and time
+        now = datetime.datetime.now()
+        # format the date and time as a string
+        date_string = now.strftime("%Y-%m-%d_%H")
 
-    file_save_name = "_".join(['RC_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
-    file_save_name = os.path.sep.join([storage_path, file_save_name])
+        file_save_name = "_".join(['RC_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
+        file_save_name = os.path.sep.join([storage_path, file_save_name])
 
-    # create the ExcelWriter obj
-    writer = pd.ExcelWriter(file_save_name, engine='xlsxwriter')
+        # create the ExcelWriter obj
+        writer = pd.ExcelWriter(file_save_name, engine='xlsxwriter')
 
-    # Loop through the dictionary and save each DataFrame to a separate sheet
-    for sheet_name, df in df_to_plot_dict.items():
-        df.to_excel(writer, sheet_name=sheet_name)
+        # Loop through the dictionary and save each DataFrame to a separate sheet
+        for sheet_name, df in df_to_plot_dict.items():
+            df.to_excel(writer, sheet_name=sheet_name)
 
-    # Save the Excel file
-    writer.save()
+        # Save the Excel file
+        writer.save()
+
