@@ -396,9 +396,9 @@ def store_results(save_name: str, storage_path: str, results_to_store_list: list
 			# concate the recipe df and clean up
 			tmp_len = len(df)
 			df = pd.concat([df,recipe], axis=1)
+			for col in recipe.columns:
+				df[col] = df[col].fillna(df[col].loc[0]) #'0' is an index label in this case, as the 'recipe' df is always 0-index
 			if len(df) != tmp_len: # if idx of df does not start with 0, then the len of df will be different after concat with recipe (which is always 0-index)
-				for col in recipe.columns:
-					df[col] = df[col].fillna(df[col].loc[0]) #'0' is an index label in this case, as the 'recipe' df is always 0-index
 				df = df.drop(0) # 0-index (created after concat) where there is NaN for all mat columns but are values for recipe attributes 
 			df.to_excel(writer, sheet_name=f'sheet_{idx}_{impact_category_idx_tuple[0]}')
 			# restore df to its original content
