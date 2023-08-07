@@ -11,6 +11,10 @@ This script contains the following helper functions:
 
 Current support the following BoM format:
  - Heeren & Fishman (2018): A database seed for a community-driven material intensity research platform
+
+References:
+ - displacement factors of wood in residential buildings: https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-021-26212-z/MediaObjects/41467_2021_26212_MOESM1_ESM.pdf (Table 6 in section 3 Scenario generation)
+
 """
 
 """
@@ -227,6 +231,8 @@ def apply_strategies(archetype_BoM_df: pd.DataFrame, strategy_dict: dict) -> dic
 						elif strategy_name == 'material efficiency':
 							# reduce the material intensity by x percent
 							archetype_BoM_df_updated = archetype_BoM_df_updated * (1-change_val)
+						elif strategy_name == 'material substitution':
+							print(f"[Warning]the combination of {change_key} & {strategy_name} is currently not supported \n")
 						else:
 							# capture the other conditions
 							# log the warning
@@ -234,8 +240,41 @@ def apply_strategies(archetype_BoM_df: pd.DataFrame, strategy_dict: dict) -> dic
 							logger.info(f"[Warning]the combination of {change_key} & {strategy_name} is currently not supported \n")
 							logger.info(" =================================================================== ")
 					else:
-						# update the value of each with 'quant_change'
-						archetype_BoM_df_updated[change_key] = archetype_BoM_df_updated[change_key].apply(lambda x: x*(1-change_val))
+						# update the value of individual materials of interest
+						if strategy_name == 'change recycled content':
+							# must ONLY have 'xxx_recycled' materials in the input dict {change_key:change val}
+							virgin_recycled_dict = {change_key[:-9]:change_key}
+							# get the change quantity
+							tmp_delta = archetype_BoM_df_updated[change_key[:-9]] * change_val # e.g., 20% of virgin materials are replaced by recycled materials -> change_val == 0.2
+							# add the change quantity to recycled material columns
+							for virgin,recycled in virgin_recycled_dict.items():
+								archetype_BoM_df_updated[recycled] = archetype_BoM_df_updated[recycled] + tmp_delta # tmp_delta is pd.Series
+								archetype_BoM_df_updated[virgin] = archetype_BoM_df_updated[virgin] - tmp_delta
+						elif strategy_name == 'material efficiency':
+							# reduce the material intensity by x percent
+							archetype_BoM_df_updated[change_key] = archetype_BoM_df_updated[change_key] * (1-change_val)
+						elif strategy_name == 'material substitution':
+							# check if the change_key is valid
+							if change_key == 'steel':
+								# get the change quantity
+								tmp_delta = archetype_BoM_df_updated[change_key] * change_val
+								# update quantity of steel and wood
+								archetype_BoM_df_updated[change_key] = archetype_BoM_df_updated[change_key] * (1-change_val)
+								archetype_BoM_df_updated['wood'] = archetype_BoM_df_updated['wood'] + tmp_delta/0.478 # 1kg lumber to substitute steel,  change in material intensity (kg/m2), in residential buildings
+							elif change_key == 'concrete':
+								# get the change quantity
+								tmp_delta = archetype_BoM_df_updated[change_key] * change_val
+								# update quantity of concrete and wood
+								archetype_BoM_df_updated[change_key] = archetype_BoM_df_updated[change_key] * (1-change_val)
+								archetype_BoM_df_updated['wood'] = archetype_BoM_df_updated['wood'] + tmp_delta/2.514 # 1kg lumber to substitute concrete,  change in material intensity (kg/m2), in residential buildings
+							else:
+								print("[Error] the material to be substituted is currently not supported (i.e., must be steel or concrete to be substituted by wood)")
+						else:
+							# capture the other conditions
+							# log the warning
+							logger.info(" =================================================================== ")
+							logger.info(f"[Warning]the combination of {change_key} & {strategy_name} is currently not supported \n")
+							logger.info(" =================================================================== ")
 		else:
 			# log the warning
 			logger.info(" =================================================================== ")
