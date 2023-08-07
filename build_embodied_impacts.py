@@ -5,6 +5,7 @@ This script fulfills the following purposes
  - run scenario analysis
  - generate plots
 
+
 """
 
 """
@@ -224,29 +225,85 @@ if __name__ == '__main__':
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
     #     file_name_retained=['WB_BoM','baseline'])
 
-    """ === Recycled Content (RC) === """
+    # prepare list of change_dicts for each strategy
+    virgin_mat_of_interest = ['steel','concrete','cement','brick'] 
+    recycle_mat_of_interest = ['steel_recycled', 'concrete_recycled', 'cement_recycled', 'brick_recycled']
+    mat_sub_of_interest = ['steel', 'concrete']
+    percent_dict = {
+        '0_2': 0.2,
+        '0_5': 0.5,
+        '0_8': 0.8,
+    }
+
+
+    # for recycled content (RC), material efficiency (ME) and material substitution (MS)
+    rc_scenario_dict = {}
+    me_scenario_dict = {}
+    ms_scenario_dict = {}
+    for k,v in percent_dict.items():
+        scenario_name = "_".join(['rc',k])
+        rc_scenario_dict[scenario_name] = [{name:v} for name in recycle_mat_of_interest] # e.g., {rc_0_2: [{'steel_recycled':0.2}, ...]}
+        scenario_name = "_".join(['me',k])
+        me_scenario_dict[scenario_name] = [{name:v} for name in virgin_mat_of_interest] # e.g., {me_0_2: [{'steel':0.2}, ...]}
+        scenario_name = "_".join(['ms',k])
+        # currently only support "WOOD to substitute STEEL & CONCRETE"
+        ms_scenario_dict[scenario_name] = [{name:v} for name in mat_sub_of_interest] # e.g., {ms_0_2: [{'steel':0.2}, ...]}
+
+
+
+    # """ === Recycled Content (RC) === """
     # # [Scenario] 20% virgin materials replaced by recycled materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
-    #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': [{'ALL': 0.2}]})
+    #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_2']})
 
     # # [Scenario] 50% virgin materials replaced by recycled materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_5', 
-    #     file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': [{'ALL': 0.5}]})
+    #     file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_5']})
 
     # # [Scenario] 80% virgin materials replaced by recycled materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_8', 
-    #     file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': [{'ALL': 0.8}]})
+    #     file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_8']})
+
+
+    # """ === Material Efficiency (ME) === """
+    # # [Scenario] 20% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_2', 
+    #     file_name_retained=['WB_BoM','ME_0_2'],strategy_dict={'material efficiency': me_scenario_dict['me_0_2']})
+
+    # # [Scenario] 50% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_5', 
+    #     file_name_retained=['WB_BoM','ME_0_5'],strategy_dict={'material efficiency': me_scenario_dict['me_0_5']})
+
+    # # [Scenario] 80% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_8', 
+    #     file_name_retained=['WB_BoM','ME_0_8'],strategy_dict={'material efficiency': me_scenario_dict['me_0_8']})
+
+
+    # """ === Material Substitution (MS) === """
+    # # [Scenario] 20% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_2', 
+    #     file_name_retained=['WB_BoM','MS_0_2'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_2']})
+
+    # # [Scenario] 50% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_5', 
+    #     file_name_retained=['WB_BoM','MS_0_5'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_5']})
+
+    # # [Scenario] 80% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_8', 
+    #     file_name_retained=['WB_BoM','MS_0_8'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_8']})
+
 
     # [process data for plot]
     # merged sheets of interest [Hard-coded]
-    merged_xlsx_of_interest = ['baseline_0_0_2023-06-14_06.xlsx','RC_0_2_2023-06-14_06.xlsx','RC_0_5_2023-06-14_06.xlsx',
-    'RC_0_8_2023-06-14_06.xlsx']
+    merged_xlsx_of_interest = ['baseline_0_0_2023-08-06_21.xlsx','RC_0_2_2023-08-06_22.xlsx','RC_0_5_2023-08-06_22.xlsx',
+    'RC_0_8_2023-08-06_22.xlsx','ME_0_2_2023-08-06_22.xlsx','ME_0_5_2023-08-06_22.xlsx','ME_0_8_2023-08-06_22.xlsx', 
+    'MS_0_2_2023-08-06_22.xlsx','MS_0_5_2023-08-06_22.xlsx','MS_0_8_2023-08-06_22.xlsx',]
 
     # dict to store the processed df for plot
     df_to_plot_dict = {}
 
     # loop over lcia of interest
-    lcia_of_interest_list = ['ReCiP_no LT_ GWP100','ReCiP_no LT_ WDP','ReCiP_no LT_ FDP'] # can add other impact cateogry of interest
+    lcia_of_interest_list = ['ReCiP_no LT_ GWP100','ReCiP_no LT_ WDP','ReCiP_no LT_ FDP', 'TRACI_TRACI_ ecotoxicity'] # can add other impact cateogry of interest
     for lcia_of_interest in lcia_of_interest_list:
         # loop over each xlsx sheet of interest
         for merged_sheet_name in merged_xlsx_of_interest:
@@ -269,7 +326,7 @@ if __name__ == '__main__':
         # format the date and time as a string
         date_string = now.strftime("%Y-%m-%d_%H")
 
-        file_save_name = "_".join(['RC_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
+        file_save_name = "_".join(['ALL_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
         file_save_name = os.path.sep.join([storage_path, file_save_name])
 
         # create the ExcelWriter obj
