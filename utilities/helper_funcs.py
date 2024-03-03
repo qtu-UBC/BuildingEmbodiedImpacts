@@ -97,7 +97,7 @@ def recipe_sheets_gen(save_name: str, storage_path: str, archetype_db: pd.DataFr
 		sheet = pd.DataFrame([row[1:]], columns=row._fields[1:]).T
 		sheet.to_excel(writer, sheet_name=sheet_name, header=None) 
 	# save all sheets to the excel file
-	writer.save()
+	writer.close()
 
 
 ## define a function for creating an archetype with BoM
@@ -445,7 +445,7 @@ def store_results(save_name: str, storage_path: str, results_to_store_list: list
 
 	# save to all sheets to the excel file
 	# format: # of sheets = # of df x # of impact categories
-	writer.save()
+	writer.close()
 
 
 ## define a function to merge result sheets
@@ -511,7 +511,7 @@ def merge_sheets(storage_path: str, path_to_sheets: str, one_sheet_name: str, im
 		one_df.to_excel(writer,sheet_name=lcia_name)
   	
 	# save as new xlsx file
-	writer.save()
+	writer.close()
 
 
 ## define a function to process results for generating plots

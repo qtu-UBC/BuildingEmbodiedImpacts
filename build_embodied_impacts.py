@@ -212,7 +212,8 @@ if __name__ == '__main__':
         recipe_sheets_gen(save_xlsx_name,storage_path,raw_bom_df,recipe_template_df)
 
     # generate recipe_sheets list
-    recipe_archetype = pd.read_excel(os.path.sep.join([storage_path,save_xlsx_name]), header = None, sheet_name=None)
+    recipe_archetype = pd.read_excel(os.path.sep.join([storage_path,save_xlsx_name]), header = None, sheet_name=None,
+        engine='openpyxl')
     recipe_sheets = []
     for sheet_name in recipe_archetype.keys():
         tmp_sheet = recipe_archetype[sheet_name].T
@@ -221,7 +222,7 @@ if __name__ == '__main__':
         tmp_sheet.reset_index(drop=True, inplace=True)
         recipe_sheets.append(tmp_sheet)
 
-    # # [Scenario] Baseline
+    # [Scenario] Baseline
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
     #     file_name_retained=['WB_BoM','baseline'])
 
@@ -230,9 +231,9 @@ if __name__ == '__main__':
     recycle_mat_of_interest = ['steel_recycled', 'concrete_recycled', 'cement_recycled', 'brick_recycled']
     mat_sub_of_interest = ['steel', 'concrete']
     percent_dict = {
+        '0_1': 0.1,
         '0_2': 0.2,
-        '0_5': 0.5,
-        '0_8': 0.8,
+        '0_3': 0.3,
     }
 
 
@@ -251,53 +252,53 @@ if __name__ == '__main__':
 
 
 
-    # """ === Recycled Content (RC) === """
+    # # """ === Recycled Content (RC) === """
+    # # [Scenario] 10% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_1', 
+    #     file_name_retained=['WB_BoM','RC_0_1'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_1']})
+
     # # [Scenario] 20% virgin materials replaced by recycled materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
     #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_2']})
 
-    # # [Scenario] 50% virgin materials replaced by recycled materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_5', 
-    #     file_name_retained=['WB_BoM','RC_0_5'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_5']})
-
-    # # [Scenario] 80% virgin materials replaced by recycled materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_8', 
-    #     file_name_retained=['WB_BoM','RC_0_8'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_8']})
+    # # [Scenario] 30% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_3', 
+    #     file_name_retained=['WB_BoM','RC_0_3'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_3']})
 
 
     # """ === Material Efficiency (ME) === """
+    # # [Scenario] 10% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_1', 
+    #     file_name_retained=['WB_BoM','ME_0_1'],strategy_dict={'material efficiency': me_scenario_dict['me_0_1']})
+
     # # [Scenario] 20% reduction in selected materials
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_2', 
     #     file_name_retained=['WB_BoM','ME_0_2'],strategy_dict={'material efficiency': me_scenario_dict['me_0_2']})
 
-    # # [Scenario] 50% reduction in selected materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_5', 
-    #     file_name_retained=['WB_BoM','ME_0_5'],strategy_dict={'material efficiency': me_scenario_dict['me_0_5']})
-
-    # # [Scenario] 80% reduction in selected materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_8', 
-    #     file_name_retained=['WB_BoM','ME_0_8'],strategy_dict={'material efficiency': me_scenario_dict['me_0_8']})
+    # # [Scenario] 30% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_3', 
+    #     file_name_retained=['WB_BoM','ME_0_3'],strategy_dict={'material efficiency': me_scenario_dict['me_0_3']})
 
 
     # """ === Material Substitution (MS) === """
+    # # [Scenario] 10% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_1', 
+    #     file_name_retained=['WB_BoM','MS_0_1'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_1']})
+
     # # [Scenario] 20% of selected materials substituted
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_2', 
     #     file_name_retained=['WB_BoM','MS_0_2'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_2']})
 
-    # # [Scenario] 50% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_5', 
-    #     file_name_retained=['WB_BoM','MS_0_5'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_5']})
-
-    # # [Scenario] 80% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_8', 
-    #     file_name_retained=['WB_BoM','MS_0_8'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_8']})
+    # # [Scenario] 30% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_3', 
+    #     file_name_retained=['WB_BoM','MS_0_3'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_3']})
 
 
     # [process data for plot]
     # merged sheets of interest [Hard-coded]
-    merged_xlsx_of_interest = ['baseline_0_0_2023-08-06_21.xlsx','RC_0_2_2023-08-06_22.xlsx','RC_0_5_2023-08-06_22.xlsx',
-    'RC_0_8_2023-08-06_22.xlsx','ME_0_2_2023-08-06_22.xlsx','ME_0_5_2023-08-06_22.xlsx','ME_0_8_2023-08-06_22.xlsx', 
-    'MS_0_2_2023-08-06_22.xlsx','MS_0_5_2023-08-06_22.xlsx','MS_0_8_2023-08-06_22.xlsx',]
+    merged_xlsx_of_interest = ['baseline_0_0_2024-03-03_11.xlsx','RC_0_1_2024-03-03_11.xlsx','RC_0_2_2024-03-03_11.xlsx',
+    'RC_0_3_2024-03-03_11.xlsx','ME_0_1_2024-03-03_11.xlsx','ME_0_2_2024-03-03_11.xlsx','ME_0_3_2024-03-03_11.xlsx', 
+    'MS_0_1_2024-03-03_11.xlsx','MS_0_2_2024-03-03_11.xlsx','MS_0_3_2024-03-03_11.xlsx',]
 
     # dict to store the processed df for plot
     df_to_plot_dict = {}
@@ -337,5 +338,5 @@ if __name__ == '__main__':
             df.to_excel(writer, sheet_name=sheet_name)
 
         # Save the Excel file
-        writer.save()
+        writer.close()
 
