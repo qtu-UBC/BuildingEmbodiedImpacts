@@ -280,7 +280,7 @@ if __name__ == '__main__':
     #     file_name_retained=['WB_BoM','ME_0_3'],strategy_dict={'material efficiency': me_scenario_dict['me_0_3']})
 
 
-    # """ === Material Substitution (MS) === """
+    """ === Material Substitution (MS) === """
     # # [Scenario] 10% of selected materials substituted
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_1', 
     #     file_name_retained=['WB_BoM','MS_0_1'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_1']})
@@ -293,12 +293,36 @@ if __name__ == '__main__':
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_3', 
     #     file_name_retained=['WB_BoM','MS_0_3'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_3']})
 
+    # # [6/19/2024] re-popluate material substitution percentage based on a different assumption
+    # new_percent_dict = {
+    #     '0_25': 0.25,
+    #     '0_50': 0.50,
+    #     '0_75': 0.75,
+    # }
+    # for k,v in new_percent_dict.items():
+    #     scenario_name = "_".join(['ms',k])
+    #     # currently only support "WOOD to substitute STEEL & CONCRETE"
+    #     ms_scenario_dict[scenario_name] = [{name:v} for name in mat_sub_of_interest] # e.g., {ms_0_25: [{'steel':0.25}, ...]}
+
+    # # [Scenario] 25% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_25', 
+    #     file_name_retained=['WB_BoM','MS_0_25'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_25']})
+
+    # # [Scenario] 50% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_50', 
+    #     file_name_retained=['WB_BoM','MS_0_50'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_50']})
+
+    # # [Scenario] 75% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_75', 
+    #     file_name_retained=['WB_BoM','MS_0_75'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_75']})
+
 
     # [process data for plot]
     # merged sheets of interest [Hard-coded]
-    merged_xlsx_of_interest = ['baseline_0_0_2024-03-03_11.xlsx','RC_0_1_2024-03-03_11.xlsx','RC_0_2_2024-03-03_11.xlsx',
-    'RC_0_3_2024-03-03_11.xlsx','ME_0_1_2024-03-03_11.xlsx','ME_0_2_2024-03-03_11.xlsx','ME_0_3_2024-03-03_11.xlsx', 
-    'MS_0_1_2024-03-03_11.xlsx','MS_0_2_2024-03-03_11.xlsx','MS_0_3_2024-03-03_11.xlsx',]
+    # merged_xlsx_of_interest = ['baseline_0_0_2024-03-03_11.xlsx','RC_0_1_2024-03-03_11.xlsx','RC_0_2_2024-03-03_11.xlsx',
+    # 'RC_0_3_2024-03-03_11.xlsx','ME_0_1_2024-03-03_11.xlsx','ME_0_2_2024-03-03_11.xlsx','ME_0_3_2024-03-03_11.xlsx', 
+    # 'MS_0_1_2024-03-03_11.xlsx','MS_0_2_2024-03-03_11.xlsx','MS_0_3_2024-03-03_11.xlsx',]
+    merged_xlsx_of_interest = ['MS_0_25_2024-06-19_12.xlsx','MS_0_50_2024-06-19_12.xlsx','MS_0_75_2024-06-19_12.xlsx',]
 
     # dict to store the processed df for plot
     df_to_plot_dict = {}
