@@ -252,77 +252,114 @@ if __name__ == '__main__':
 
 
 
-    # # """ === Recycled Content (RC) === """
-    # # [Scenario] 10% virgin materials replaced by recycled materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_1', 
-    #     file_name_retained=['WB_BoM','RC_0_1'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_1']})
+    # # # """ === Recycled Content (RC) === """
+    # # # [Scenario] 10% virgin materials replaced by recycled materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_1', 
+    # #     file_name_retained=['WB_BoM','RC_0_1'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_1']})
 
-    # # [Scenario] 20% virgin materials replaced by recycled materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
-    #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_2']})
+    # # # [Scenario] 20% virgin materials replaced by recycled materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_2', 
+    # #     file_name_retained=['WB_BoM','RC_0_2'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_2']})
 
-    # # [Scenario] 30% virgin materials replaced by recycled materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_3', 
-    #     file_name_retained=['WB_BoM','RC_0_3'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_3']})
+    # # # [Scenario] 30% virgin materials replaced by recycled materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_3', 
+    # #     file_name_retained=['WB_BoM','RC_0_3'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_3']})
 
-
-    # """ === Material Efficiency (ME) === """
-    # # [Scenario] 10% reduction in selected materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_1', 
-    #     file_name_retained=['WB_BoM','ME_0_1'],strategy_dict={'material efficiency': me_scenario_dict['me_0_1']})
-
-    # # [Scenario] 20% reduction in selected materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_2', 
-    #     file_name_retained=['WB_BoM','ME_0_2'],strategy_dict={'material efficiency': me_scenario_dict['me_0_2']})
-
-    # # [Scenario] 30% reduction in selected materials
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_3', 
-    #     file_name_retained=['WB_BoM','ME_0_3'],strategy_dict={'material efficiency': me_scenario_dict['me_0_3']})
-
-
-    """ === Material Substitution (MS) === """
-    # # [Scenario] 10% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_1', 
-    #     file_name_retained=['WB_BoM','MS_0_1'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_1']})
-
-    # # [Scenario] 20% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_2', 
-    #     file_name_retained=['WB_BoM','MS_0_2'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_2']})
-
-    # # [Scenario] 30% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_3', 
-    #     file_name_retained=['WB_BoM','MS_0_3'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_3']})
-
-    # # [6/19/2024] re-popluate material substitution percentage based on a different assumption
+    # # [7/02/2024] re-popluate recycled content percentage based on different assumptions
     # new_percent_dict = {
-    #     '0_25': 0.25,
+    #     '0_40': 0.40,
+    #     '0_60': 0.60,
+    #     '0_80': 0.80,
+    #     '0_100': 1.00,
+    # }
+    # for k,v in new_percent_dict.items():
+    #     scenario_name = "_".join(['rc',k])
+    #     rc_scenario_dict[scenario_name] = [{name:v} for name in recycle_mat_of_interest] # e.g., {rc_0_2: [{'steel_recycled':0.2}, ...]}
+
+    # # [Scenario] 40% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_40', 
+    #     file_name_retained=['WB_BoM','RC_0_40'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_40']})
+
+    # # [Scenario] 60% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_60', 
+    #     file_name_retained=['WB_BoM','RC_0_60'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_60']})
+
+    # # [Scenario] 80% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_80', 
+    #     file_name_retained=['WB_BoM','RC_0_80'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_80']})
+
+    # # [Scenario] 100% virgin materials replaced by recycled materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='RC_0_100', 
+    #     file_name_retained=['WB_BoM','RC_0_100'],strategy_dict={'change recycled content': rc_scenario_dict['rc_0_100']})
+
+
+    # # """ === Material Efficiency (ME) === """
+    # # # [Scenario] 10% reduction in selected materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_1', 
+    # #     file_name_retained=['WB_BoM','ME_0_1'],strategy_dict={'material efficiency': me_scenario_dict['me_0_1']})
+
+    # # # [Scenario] 20% reduction in selected materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_2', 
+    # #     file_name_retained=['WB_BoM','ME_0_2'],strategy_dict={'material efficiency': me_scenario_dict['me_0_2']})
+
+    # # # [Scenario] 30% reduction in selected materials
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_3', 
+    # #     file_name_retained=['WB_BoM','ME_0_3'],strategy_dict={'material efficiency': me_scenario_dict['me_0_3']})
+
+    # # [7/02/2024] re-popluate material efficiency percentage based on different assumptions
+    # new_percent_dict = {
+    #     '0_40': 0.40,
     #     '0_50': 0.50,
-    #     '0_75': 0.75,
+    # }
+    # for k,v in new_percent_dict.items():
+    #     scenario_name = "_".join(['me',k])
+    #     me_scenario_dict[scenario_name] = [{name:v} for name in virgin_mat_of_interest] # e.g., {me_0_2: [{'steel':0.2}, ...]}
+
+    # # [Scenario] 40% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_40', 
+    #     file_name_retained=['WB_BoM','ME_0_40'],strategy_dict={'material efficiency': me_scenario_dict['me_0_40']})
+
+    # # [Scenario] 50% reduction in selected materials
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='ME_0_50', 
+    #     file_name_retained=['WB_BoM','ME_0_50'],strategy_dict={'material efficiency': me_scenario_dict['me_0_50']})
+
+
+    # """ === Material Substitution (MS) === """
+    # # # [Scenario] 10% of selected materials substituted
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_1', 
+    # #     file_name_retained=['WB_BoM','MS_0_1'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_1']})
+
+    # # # [Scenario] 20% of selected materials substituted
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_2', 
+    # #     file_name_retained=['WB_BoM','MS_0_2'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_2']})
+
+    # # # [Scenario] 30% of selected materials substituted
+    # # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_3', 
+    # #     file_name_retained=['WB_BoM','MS_0_3'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_3']})
+
+    # # [7/02/2024] re-popluate material substitution percentage based on different assumptions
+    # new_percent_dict = {
+    #     '0_40': 0.40,
+    #     '0_60': 0.60,
     # }
     # for k,v in new_percent_dict.items():
     #     scenario_name = "_".join(['ms',k])
     #     # currently only support "WOOD to substitute STEEL & CONCRETE"
     #     ms_scenario_dict[scenario_name] = [{name:v} for name in mat_sub_of_interest] # e.g., {ms_0_25: [{'steel':0.25}, ...]}
 
-    # # [Scenario] 25% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_25', 
-    #     file_name_retained=['WB_BoM','MS_0_25'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_25']})
+    # # [Scenario] 40% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_40', 
+    #     file_name_retained=['WB_BoM','MS_0_40'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_40']})
 
-    # # [Scenario] 50% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_50', 
-    #     file_name_retained=['WB_BoM','MS_0_50'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_50']})
-
-    # # [Scenario] 75% of selected materials substituted
-    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_75', 
-    #     file_name_retained=['WB_BoM','MS_0_75'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_75']})
+    # # [Scenario] 60% of selected materials substituted
+    # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='MS_0_60', 
+    #     file_name_retained=['WB_BoM','MS_0_60'],strategy_dict={'material substitution': ms_scenario_dict['ms_0_60']})
 
 
     # [process data for plot]
     # merged sheets of interest [Hard-coded]
-    # merged_xlsx_of_interest = ['baseline_0_0_2024-03-03_11.xlsx','RC_0_1_2024-03-03_11.xlsx','RC_0_2_2024-03-03_11.xlsx',
-    # 'RC_0_3_2024-03-03_11.xlsx','ME_0_1_2024-03-03_11.xlsx','ME_0_2_2024-03-03_11.xlsx','ME_0_3_2024-03-03_11.xlsx', 
-    # 'MS_0_1_2024-03-03_11.xlsx','MS_0_2_2024-03-03_11.xlsx','MS_0_3_2024-03-03_11.xlsx',]
-    merged_xlsx_of_interest = ['MS_0_25_2024-06-19_12.xlsx','MS_0_50_2024-06-19_12.xlsx','MS_0_75_2024-06-19_12.xlsx',]
+    merged_xlsx_of_interest = ['ME_0_40_2024-07-02_20.xlsx','ME_0_50_2024-07-02_20.xlsx','MS_0_40_2024-07-02_20.xlsx','MS_0_60_2024-07-02_20.xlsx',
+        'RC_0_40_2024-07-02_20.xlsx','RC_0_60_2024-07-02_20.xlsx','RC_0_80_2024-07-02_20.xlsx','RC_0_100_2024-07-02_20.xlsx',]
 
     # dict to store the processed df for plot
     df_to_plot_dict = {}
