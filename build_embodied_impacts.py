@@ -208,47 +208,47 @@ Scenario analysis
 
 if __name__ == '__main__':
     # generate all recipes
-    if not os.path.exists(os.path.sep.join([storage_path,save_xlsx_name])):
-        recipe_sheets_gen(save_xlsx_name,storage_path,raw_bom_df,recipe_template_df)
+    # if not os.path.exists(os.path.sep.join([storage_path,save_xlsx_name])):
+    #     recipe_sheets_gen(save_xlsx_name,storage_path,raw_bom_df,recipe_template_df)
 
-    # generate recipe_sheets list
-    recipe_archetype = pd.read_excel(os.path.sep.join([storage_path,save_xlsx_name]), header = None, sheet_name=None,
-        engine='openpyxl')
-    recipe_sheets = []
-    for sheet_name in recipe_archetype.keys():
-        tmp_sheet = recipe_archetype[sheet_name].T
-        tmp_sheet.columns = tmp_sheet.iloc[0]
-        tmp_sheet = tmp_sheet[1:]
-        tmp_sheet.reset_index(drop=True, inplace=True)
-        recipe_sheets.append(tmp_sheet)
+    # # generate recipe_sheets list
+    # recipe_archetype = pd.read_excel(os.path.sep.join([storage_path,save_xlsx_name]), header = None, sheet_name=None,
+    #     engine='openpyxl')
+    # recipe_sheets = []
+    # for sheet_name in recipe_archetype.keys():
+    #     tmp_sheet = recipe_archetype[sheet_name].T
+    #     tmp_sheet.columns = tmp_sheet.iloc[0]
+    #     tmp_sheet = tmp_sheet[1:]
+    #     tmp_sheet.reset_index(drop=True, inplace=True)
+    #     recipe_sheets.append(tmp_sheet)
 
     # [Scenario] Baseline
     # scenario_analysis(raw_bom_df, recipe_sheets, mat_impact_df, manual_mapping_final,strategy_info='baseline_0_0', 
     #     file_name_retained=['WB_BoM','baseline'])
 
-    # prepare list of change_dicts for each strategy
-    virgin_mat_of_interest = ['steel','concrete','cement','brick'] 
-    recycle_mat_of_interest = ['steel_recycled', 'concrete_recycled', 'cement_recycled', 'brick_recycled']
-    mat_sub_of_interest = ['steel', 'concrete']
-    percent_dict = {
-        '0_1': 0.1,
-        '0_2': 0.2,
-        '0_3': 0.3,
-    }
+    # # prepare list of change_dicts for each strategy
+    # virgin_mat_of_interest = ['steel','concrete','cement','brick'] 
+    # recycle_mat_of_interest = ['steel_recycled', 'concrete_recycled', 'cement_recycled', 'brick_recycled']
+    # mat_sub_of_interest = ['steel', 'concrete']
+    # percent_dict = {
+    #     '0_1': 0.1,
+    #     '0_2': 0.2,
+    #     '0_3': 0.3,
+    # }
 
 
-    # for recycled content (RC), material efficiency (ME) and material substitution (MS)
-    rc_scenario_dict = {}
-    me_scenario_dict = {}
-    ms_scenario_dict = {}
-    for k,v in percent_dict.items():
-        scenario_name = "_".join(['rc',k])
-        rc_scenario_dict[scenario_name] = [{name:v} for name in recycle_mat_of_interest] # e.g., {rc_0_2: [{'steel_recycled':0.2}, ...]}
-        scenario_name = "_".join(['me',k])
-        me_scenario_dict[scenario_name] = [{name:v} for name in virgin_mat_of_interest] # e.g., {me_0_2: [{'steel':0.2}, ...]}
-        scenario_name = "_".join(['ms',k])
-        # currently only support "WOOD to substitute STEEL & CONCRETE"
-        ms_scenario_dict[scenario_name] = [{name:v} for name in mat_sub_of_interest] # e.g., {ms_0_2: [{'steel':0.2}, ...]}
+    # # for recycled content (RC), material efficiency (ME) and material substitution (MS)
+    # rc_scenario_dict = {}
+    # me_scenario_dict = {}
+    # ms_scenario_dict = {}
+    # for k,v in percent_dict.items():
+    #     scenario_name = "_".join(['rc',k])
+    #     rc_scenario_dict[scenario_name] = [{name:v} for name in recycle_mat_of_interest] # e.g., {rc_0_2: [{'steel_recycled':0.2}, ...]}
+    #     scenario_name = "_".join(['me',k])
+    #     me_scenario_dict[scenario_name] = [{name:v} for name in virgin_mat_of_interest] # e.g., {me_0_2: [{'steel':0.2}, ...]}
+    #     scenario_name = "_".join(['ms',k])
+    #     # currently only support "WOOD to substitute STEEL & CONCRETE"
+    #     ms_scenario_dict[scenario_name] = [{name:v} for name in mat_sub_of_interest] # e.g., {ms_0_2: [{'steel':0.2}, ...]}
 
 
 
@@ -358,46 +358,130 @@ if __name__ == '__main__':
 
     # [process data for plot]
     # merged sheets of interest [Hard-coded]
-    merged_xlsx_of_interest = ['ME_0_40_2024-07-02_20.xlsx','ME_0_50_2024-07-02_20.xlsx','MS_0_40_2024-07-02_20.xlsx','MS_0_60_2024-07-02_20.xlsx',
-        'RC_0_40_2024-07-02_20.xlsx','RC_0_60_2024-07-02_20.xlsx','RC_0_80_2024-07-02_20.xlsx','RC_0_100_2024-07-02_20.xlsx',]
+    # merged_xlsx_of_interest = ['ME_0_40_2024-07-02_20.xlsx','ME_0_50_2024-07-02_20.xlsx','MS_0_40_2024-07-02_20.xlsx','MS_0_60_2024-07-02_20.xlsx',
+    #     'RC_0_40_2024-07-02_20.xlsx','RC_0_60_2024-07-02_20.xlsx','RC_0_80_2024-07-02_20.xlsx','RC_0_100_2024-07-02_20.xlsx',]
 
-    # dict to store the processed df for plot
-    df_to_plot_dict = {}
+    # # dict to store the processed df for plot
+    # df_to_plot_dict = {}
 
-    # loop over lcia of interest
-    lcia_of_interest_list = ['ReCiP_no LT_ GWP100','ReCiP_no LT_ WDP','ReCiP_no LT_ FDP', 'TRACI_TRACI_ ecotoxicity'] # can add other impact cateogry of interest
-    for lcia_of_interest in lcia_of_interest_list:
-        # loop over each xlsx sheet of interest
-        for merged_sheet_name in merged_xlsx_of_interest:
-            # load xlsx file from drive
-            loaded_sheet_dict = pd.read_excel(os.path.sep.join([storage_path,merged_sheet_name]),sheet_name=None)
-            # scenario information
-            tmp = merged_sheet_name.split("_")
-            # quick hack [Hard-coded]
-            if tmp[0] == 'baseline':
-                tmp[0] = 'RC'
-            scenario_info = {tmp[0]: float(".".join([tmp[1],tmp[2]]))}
-            # feed the lcia sheet of interest to processing function 
-            processed_df = process_for_plot(loaded_sheet_dict[lcia_of_interest],mat_cols,scenario_info) # mat_cols defined at beginning of this script
-            # add processed df to the dict
-            df_to_plot_dict[merged_sheet_name] = processed_df
+    # # loop over lcia of interest
+    # lcia_of_interest_list = ['ReCiP_no LT_ GWP100','ReCiP_no LT_ WDP','ReCiP_no LT_ FDP', 'TRACI_TRACI_ ecotoxicity'] # can add other impact cateogry of interest
+    # for lcia_of_interest in lcia_of_interest_list:
+    #     # loop over each xlsx sheet of interest
+    #     for merged_sheet_name in merged_xlsx_of_interest:
+    #         # load xlsx file from drive
+    #         loaded_sheet_dict = pd.read_excel(os.path.sep.join([storage_path,merged_sheet_name]),sheet_name=None)
+    #         # scenario information
+    #         tmp = merged_sheet_name.split("_")
+    #         # quick hack [Hard-coded]
+    #         if tmp[0] == 'baseline':
+    #             tmp[0] = 'RC'
+    #         scenario_info = {tmp[0]: float(".".join([tmp[1],tmp[2]]))}
+    #         # feed the lcia sheet of interest to processing function 
+    #         processed_df = process_for_plot(loaded_sheet_dict[lcia_of_interest],mat_cols,scenario_info) # mat_cols defined at beginning of this script
+    #         # add processed df to the dict
+    #         df_to_plot_dict[merged_sheet_name] = processed_df
 
-        # [save the results to a single file]
-        # get the current date and time
-        now = datetime.datetime.now()
-        # format the date and time as a string
-        date_string = now.strftime("%Y-%m-%d_%H")
+    #     # [save the results to a single file]
+    #     # get the current date and time
+    #     now = datetime.datetime.now()
+    #     # format the date and time as a string
+    #     date_string = now.strftime("%Y-%m-%d_%H")
 
-        file_save_name = "_".join(['ALL_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
-        file_save_name = os.path.sep.join([storage_path, file_save_name])
+    #     file_save_name = "_".join(['ALL_scenarios_combined',lcia_of_interest,date_string,'.xlsx'])
+    #     file_save_name = os.path.sep.join([storage_path, file_save_name])
 
-        # create the ExcelWriter obj
-        writer = pd.ExcelWriter(file_save_name, engine='xlsxwriter')
+    #     # create the ExcelWriter obj
+    #     writer = pd.ExcelWriter(file_save_name, engine='xlsxwriter')
 
-        # Loop through the dictionary and save each DataFrame to a separate sheet
-        for sheet_name, df in df_to_plot_dict.items():
-            df.to_excel(writer, sheet_name=sheet_name)
+    #     # Loop through the dictionary and save each DataFrame to a separate sheet
+    #     for sheet_name, df in df_to_plot_dict.items():
+    #         df.to_excel(writer, sheet_name=sheet_name)
 
-        # Save the Excel file
-        writer.close()
+    #     # Save the Excel file
+    #     writer.close()
 
+        # Analyze material intensity across building types
+        print("Analyzing material intensity across building types...")
+        
+        # Define materials of interest for analysis
+        materials_to_analyze = ['steel', 'concrete', 'wood', 'copper', 'aluminum']
+        
+        # Convert to MAT_ format to match the column names in the BOM dataframe
+        mat_columns = [f"MAT_{material}" for material in materials_to_analyze]
+        
+        # Make sure the output directory exists
+        plot_output_dir = os.path.join(storage_path, "plots", "material_intensity")
+        os.makedirs(plot_output_dir, exist_ok=True)
+        
+        # Use the raw_bom_df for material intensity analysis
+        # This dataframe should already have the necessary columns for building types and occupancy
+        print(f"Analyzing material intensity for {len(materials_to_analyze)} materials...")
+        
+        # Create boxplots for each material by Occupation
+        for material, mat_col in zip(materials_to_analyze, mat_columns):
+            if mat_col in raw_bom_df.columns:
+                try:
+                    print(f"Creating boxplot for {material} by Occupation...")
+                    fig = create_material_intensity_boxplots(
+                        df=raw_bom_df,
+                        material_col=mat_col,
+                        group_by="Occupation",
+                        output_path=os.path.join(plot_output_dir, f"{material}_by_occupation.png"),
+                        title=f"{material.title()} Intensity by Building Occupation"
+                    )
+                    plt.close(fig)
+                except Exception as e:
+                    print(f"Error creating boxplot for {material} by Occupation: {str(e)}")
+            else:
+                print(f"Warning: Material column '{mat_col}' not found in BOM dataframe")
+        
+        # Create boxplots for each material by Building Type
+        if "Building Type" in raw_bom_df.columns:
+            for material, mat_col in zip(materials_to_analyze, mat_columns):
+                if mat_col in raw_bom_df.columns:
+                    try:
+                        print(f"Creating boxplot for {material} by Building Type...")
+                        fig = create_material_intensity_boxplots(
+                            df=raw_bom_df,
+                            material_col=mat_col,
+                            group_by="Building Type",
+                            output_path=os.path.join(plot_output_dir, f"{material}_by_building_type.png"),
+                            title=f"{material.title()} Intensity by Building Type"
+                        )
+                        plt.close(fig)
+                    except Exception as e:
+                        print(f"Error creating boxplot for {material} by Building Type: {str(e)}")
+        else:
+            print("Warning: 'Building Type' column not found in BOM dataframe")
+        
+        # Use the analyze_any_materials function for a more comprehensive analysis
+        print("Performing comprehensive material analysis...")
+        try:
+            from utilities.analyze import analyze_any_materials
+            
+            # Create a dedicated output directory for the comprehensive analysis
+            comprehensive_output_dir = os.path.join(storage_path, "plots", "comprehensive_material_analysis")
+            
+            # Analyze by Occupation
+            analyze_any_materials(
+                materials_of_interest=materials_to_analyze,
+                bom_path=config.BOM_PATH,
+                group_by="Occupation",
+                output_dir=comprehensive_output_dir
+            )
+            
+            # Analyze by Building Type if the column exists
+            if "Building Type" in raw_bom_df.columns:
+                analyze_any_materials(
+                    materials_of_interest=materials_to_analyze,
+                    bom_path=config.BOM_PATH,
+                    group_by="Building Type",
+                    output_dir=comprehensive_output_dir
+                )
+        except Exception as e:
+            print(f"Error in comprehensive material analysis: {str(e)}")
+            import traceback
+            traceback.print_exc()
+        
+        print("Material intensity analysis completed.")
