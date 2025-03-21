@@ -64,10 +64,28 @@ def create_material_intensity_boxplots(
     # Remove rows with NaN or infinite values
     df = df[np.isfinite(df[material_col])]
     
+    # Identify extreme outliers (values beyond 3 IQRs from the quartiles)
+    Q1 = df[material_col].quantile(0.25)
+    Q3 = df[material_col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 3 * IQR
+    upper_bound = Q3 + 3 * IQR
+    
+    # Identify and print extreme outliers
+    outliers = df[(df[material_col] < lower_bound) | (df[material_col] > upper_bound)]
+    if not outliers.empty:
+        print(f"\nExtreme outliers detected for {material_col}:")
+        print(f"Values outside range: {lower_bound:.2f} to {upper_bound:.2f}")
+        print(outliers[[group_by, material_col]].to_string())
+        print(f"Total outliers: {len(outliers)} out of {len(df)} data points")
+    
+    # Remove extreme outliers for visualization
+    df_filtered = df[(df[material_col] >= lower_bound) & (df[material_col] <= upper_bound)]
+    
     # Add more detailed debug prints
-    print(f"Debug: DataFrame shape: {df.shape}")
-    print(f"Debug: Number of finite intensity values: {np.sum(np.isfinite(df[material_col]))}")
-    print(f"Debug: Unique {group_by} values: {df[group_by].unique()}")
+    print(f"Debug: DataFrame shape after removing outliers: {df_filtered.shape}")
+    print(f"Debug: Number of finite intensity values: {np.sum(np.isfinite(df_filtered[material_col]))}")
+    print(f"Debug: Unique {group_by} values: {df_filtered[group_by].unique()}")
     # Create the figure
     fig, ax = plt.subplots(figsize=figsize)
     print("Debug: Figure created")
@@ -76,7 +94,7 @@ def create_material_intensity_boxplots(
     sns.boxplot(
         x=group_by,
         y=material_col,
-        data=df,
+        data=df_filtered,
         ax=ax,
         palette=palette
     )
@@ -85,7 +103,7 @@ def create_material_intensity_boxplots(
     sns.stripplot(
         x=group_by,
         y=material_col,
-        data=df,
+        data=df_filtered,
         ax=ax,
         color='black',
         alpha=0.5,
@@ -103,7 +121,7 @@ def create_material_intensity_boxplots(
     ax.set_ylabel(f"{material_name} Intensity (kg/m²)", fontsize=12)
     
     # Rotate x-axis labels if there are many categories
-    if df[group_by].nunique() > 4:
+    if df_filtered[group_by].nunique() > 4:
         plt.xticks(rotation=45, ha='right')
     
     plt.tight_layout()
