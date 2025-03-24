@@ -236,6 +236,119 @@ def analyze_any_materials(materials_of_interest: List[str], bom_path=None, group
     print(f"Analysis complete. {len(figures)} material plots saved to {output_dir}")
     return figures
 
+def show_top_k_boxplots(df, col_to_plot, criteria, k=3, group_by=['Country', 'Occupation']):
+    """
+    Show the top k results for a given column and group by a list of columns.
+    Only includes groups with at least 5 data points.
+    """
+    # First, print the available columns to debug
+    print(f"Debug: Available columns in DataFrame: {df.columns.tolist()}")
+    
+    # Verify all group_by columns exist
+    missing_cols = [col for col in group_by if col not in df.columns]
+    if missing_cols:
+        print(f"Warning: The following columns are missing: {missing_cols}")
+        # Try to find similar column names (case-insensitive)
+        for missing_col in missing_cols:
+            similar_cols = [col for col in df.columns if col.lower() == missing_col.lower()]
+            if similar_cols:
+                print(f"Found similar column name: '{similar_cols[0]}' for '{missing_col}'")
+                # Update group_by with the correct column name
+                group_by[group_by.index(missing_col)] = similar_cols[0]
+            else:
+                raise ValueError(f"Required column '{missing_col}' not found in DataFrame")
+    
+    # Calculate statistics for each group and count the number of data points
+    grouped = df.groupby(group_by)
+    
+    # Get the count of data points in each group
+    group_counts = grouped[col_to_plot].count().reset_index()
+    group_counts.rename(columns={col_to_plot: 'count'}, inplace=True)
+    
+    # Calculate the requested statistic for each group
+    if criteria == "standard deviation":
+        group_stats = grouped[col_to_plot].std().reset_index()
+    else:  # default to mean
+        group_stats = grouped[col_to_plot].mean().reset_index()
+    
+    # Merge the statistics with the counts
+    group_stats = pd.merge(group_stats, group_counts, on=group_by)
+    
+    # Filter to only include groups with at least 5 data points
+    group_stats = group_stats[group_stats['count'] >= 5]
+    
+    # Check if we have any groups left after filtering
+    if len(group_stats) == 0:
+        print(f"Warning: No groups have at least 5 data points for {col_to_plot}")
+        return None
+    
+    # Sort and get top k groups
+    group_stats = group_stats.sort_values(by=col_to_plot, ascending=False).head(k)
+    
+    # Create a filter for the original dataframe
+    filter_conditions = None
+    for _, row in group_stats.iterrows():
+        condition = pd.Series(True, index=df.index)
+        for col in group_by:
+            condition &= (df[col] == row[col])
+        if filter_conditions is None:
+            filter_conditions = condition
+        else:
+            filter_conditions |= condition
+    
+    # Filter the dataframe
+    df_filtered = df[filter_conditions].copy()
+    
+    # Create the combined group labels
+    df_filtered['_combined_group'] = ''
+    for idx, row in df_filtered.iterrows():
+        labels = [str(row[col]) for col in group_by]
+        df_filtered.at[idx, '_combined_group'] = ' - '.join(labels)
+    
+    # Create the ordered group labels for plotting
+    top_k_combined_groups = []
+    for _, row in group_stats.iterrows():
+        labels = [str(row[col]) for col in group_by]
+        top_k_combined_groups.append(' - '.join(labels))
+    
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.boxplot(
+        x='_combined_group',
+        y=col_to_plot,
+        data=df_filtered,
+        ax=ax,
+        order=top_k_combined_groups
+    )
+    
+    # Add title and labels
+    group_by_display = ' & '.join(group_by)
+    ax.set_title(f"Top {k} {group_by_display} by {col_to_plot} ({criteria}) - Min 5 data points")
+    ax.set_xlabel(group_by_display)
+    ax.set_ylabel(col_to_plot)
+    
+    # Rotate x-axis labels if needed
+    plt.xticks(rotation=45, ha='right')
+    
+    # Adjust layout
+    plt.tight_layout()
+    
+    # Save the figure
+    group_by_filename = '_'.join(group_by)
+    output_path = os.path.join(config.RESULTS_OUTPUT_PATH, "plots", "top_k_analysis", 
+                              f"{col_to_plot}_{group_by_filename}_top_{k}_{criteria.lower().replace(' ', '_')}.png")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    plt.savefig(output_path, dpi=300)
+    
+    # Print information about the top k groups
+    print(f"\nTop {k} {group_by_display} by {col_to_plot} ({criteria}) with at least 5 data points:")
+    for _, row in group_stats.iterrows():
+        group_identifier = ', '.join([f"{col}={row[col]}" for col in group_by])
+        print(f"{group_identifier}: {row[col_to_plot]:.2f} (n={row['count']})")
+    
+    return fig
+
+################################################################################
 
 if __name__ == "__main__":
     
@@ -262,3 +375,5 @@ if __name__ == "__main__":
         group_by='building_type',
         output_dir=os.path.join(config.RESULTS_OUTPUT_PATH, "plots", "building_type_analysis")
     )
+
+
