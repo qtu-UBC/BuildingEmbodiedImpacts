@@ -485,3 +485,4 @@ if __name__ == '__main__':
             traceback.print_exc()
         
         print("Material intensity analysis completed.")
+        # Analyze scenario results with boxplots
