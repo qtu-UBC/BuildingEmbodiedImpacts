@@ -418,21 +418,21 @@ if __name__ == '__main__':
         # This dataframe should already have the necessary columns for building types and occupancy
         print(f"Analyzing material intensity for {len(materials_to_analyze)} materials...")
         
-        # Create boxplots for each material by Occupation
+        # Create boxplots for each material by Occupation and Country
         for material, mat_col in zip(materials_to_analyze, mat_columns):
             if mat_col in raw_bom_df.columns:
                 try:
-                    print(f"Creating boxplot for {material} by Occupation...")
+                    print(f"Creating boxplot for {material} by Occupation and Country...")
                     fig = create_material_intensity_boxplots(
                         df=raw_bom_df,
                         material_col=mat_col,
-                        group_by="Occupation",
-                        output_path=os.path.join(plot_output_dir, f"{material}_by_occupation.png"),
-                        title=f"{material.title()} Intensity by Building Occupation"
+                        group_by=["Occupation", "Country"],
+                        output_path=os.path.join(plot_output_dir, f"{material}_by_occupation_and_country.png"),
+                        title=f"{material.title()} Intensity by Occupation and Country"
                     )
                     plt.close(fig)
                 except Exception as e:
-                    print(f"Error creating boxplot for {material} by Occupation: {str(e)}")
+                    print(f"Error creating boxplot for {material} by Occupation and Country: {str(e)}")
             else:
                 print(f"Warning: Material column '{mat_col}' not found in BOM dataframe")
         
@@ -463,11 +463,11 @@ if __name__ == '__main__':
             # Create a dedicated output directory for the comprehensive analysis
             comprehensive_output_dir = os.path.join(storage_path, "plots", "comprehensive_material_analysis")
             
-            # Analyze by Occupation
+            # Analyze by Occupation and Country
             analyze_any_materials(
                 materials_of_interest=materials_to_analyze,
                 bom_path=config.BOM_PATH,
-                group_by="Occupation",
+                group_by=["Occupation", "Country"],
                 output_dir=comprehensive_output_dir
             )
             

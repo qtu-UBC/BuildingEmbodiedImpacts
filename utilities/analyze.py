@@ -34,6 +34,8 @@ def create_material_intensity_boxplots(
                           already calculated in kg/m²
         material_col (str): Column name of the material intensity to analyze
         group_by (str, optional): Column to group the data by. Defaults to "Occupation".
+                                 Can be "Occupation", "Country", or a list ["Occupation", "Country"]
+                                 for grouped analysis.
         figsize (tuple, optional): Figure size as (width, height). Defaults to (12, 8).
         output_path (str, optional): Path to save the figure. If None, figure is saved to default output folder.
         title (str, optional): Custom title for the plot. If None, a default title is generated.
@@ -57,9 +59,20 @@ def create_material_intensity_boxplots(
     if material_col not in df.columns:
         raise ValueError(f"Material column '{material_col}' not found in DataFrame")
     
-    # Ensure the grouping column exists
-    if group_by not in df.columns:
-        raise ValueError(f"Group column '{group_by}' not found in DataFrame")
+    # Handle different group_by options
+    if isinstance(group_by, list):
+        # Multiple grouping columns
+        for col in group_by:
+            if col not in df.columns:
+                raise ValueError(f"Group column '{col}' not found in DataFrame")
+        # Create a combined grouping column
+        df['_combined_group'] = df[group_by].apply(lambda x: ' - '.join(x.astype(str)), axis=1)
+        actual_group_by = '_combined_group'
+    else:
+        # Single grouping column
+        if group_by not in df.columns:
+            raise ValueError(f"Group column '{group_by}' not found in DataFrame")
+        actual_group_by = group_by
     
     # Remove rows with NaN or infinite values
     df = df[np.isfinite(df[material_col])]
@@ -76,7 +89,7 @@ def create_material_intensity_boxplots(
     if not outliers.empty:
         print(f"\nExtreme outliers detected for {material_col}:")
         print(f"Values outside range: {lower_bound:.2f} to {upper_bound:.2f}")
-        print(outliers[[group_by, material_col]].to_string())
+        print(outliers[[actual_group_by, material_col]].to_string())
         print(f"Total outliers: {len(outliers)} out of {len(df)} data points")
     
     # Remove extreme outliers for visualization
@@ -85,14 +98,14 @@ def create_material_intensity_boxplots(
     # Add more detailed debug prints
     print(f"Debug: DataFrame shape after removing outliers: {df_filtered.shape}")
     print(f"Debug: Number of finite intensity values: {np.sum(np.isfinite(df_filtered[material_col]))}")
-    print(f"Debug: Unique {group_by} values: {df_filtered[group_by].unique()}")
+    print(f"Debug: Unique {actual_group_by} values: {df_filtered[actual_group_by].unique()}")
     # Create the figure
     fig, ax = plt.subplots(figsize=figsize)
     print("Debug: Figure created")
     
     # Create the boxplot
     sns.boxplot(
-        x=group_by,
+        x=actual_group_by,
         y=material_col,
         data=df_filtered,
         ax=ax,
@@ -101,7 +114,7 @@ def create_material_intensity_boxplots(
     
     # Add individual data points for better visualization
     sns.stripplot(
-        x=group_by,
+        x=actual_group_by,
         y=material_col,
         data=df_filtered,
         ax=ax,
@@ -114,14 +127,20 @@ def create_material_intensity_boxplots(
     # Set title and labels
     material_name = material_col.replace("MAT_", "").title()
     if title is None:
-        title = f"{material_name} Intensity (kg/m²) by {group_by}"
+        if isinstance(group_by, list):
+            title = f"{material_name} Intensity (kg/m²) by {' and '.join(group_by)}"
+        else:
+            title = f"{material_name} Intensity (kg/m²) by {group_by}"
     
     ax.set_title(title, fontsize=14)
-    ax.set_xlabel(group_by, fontsize=12)
+    if isinstance(group_by, list):
+        ax.set_xlabel(' and '.join(group_by), fontsize=12)
+    else:
+        ax.set_xlabel(group_by, fontsize=12)
     ax.set_ylabel(f"{material_name} Intensity (kg/m²)", fontsize=12)
     
     # Rotate x-axis labels if there are many categories
-    if df_filtered[group_by].nunique() > 4:
+    if df_filtered[actual_group_by].nunique() > 4:
         plt.xticks(rotation=45, ha='right')
     
     plt.tight_layout()
@@ -133,7 +152,10 @@ def create_material_intensity_boxplots(
     if output_path is None:
         # Use default output folder from config
         material_name_slug = material_name.lower().replace(" ", "_")
-        group_by_slug = group_by.lower().replace(" ", "_")
+        if isinstance(group_by, list):
+            group_by_slug = '_and_'.join([g.lower().replace(" ", "_") for g in group_by])
+        else:
+            group_by_slug = group_by.lower().replace(" ", "_")
         filename = f"{material_name_slug}_intensity_by_{group_by_slug}.png"
         output_path = os.path.join(config.RESULTS_OUTPUT_PATH, "plots", filename)
     
@@ -163,7 +185,8 @@ def analyze_any_materials(materials_of_interest: List[str], bom_path=None, group
         materials_of_interest (List[str]): List of material names to analyze. Material names are 
             case-insensitive and should match column names in the BOM file.
         bom_path (str, optional): Path to the BOM file. Defaults to config.BOM_PATH.
-        group_by (str, optional): Column to group by for analysis. Defaults to 'Occupation'.
+        group_by (str or list, optional): Column(s) to group by for analysis. Can be a string like 'Occupation'
+            or a list of columns like ['Occupation', 'Country']. Defaults to 'Occupation'.
         output_dir (str, optional): Directory to save plots. Defaults to config.RESULTS_OUTPUT_PATH/plots/material_analysis.
     
     Returns:
@@ -214,17 +237,23 @@ def analyze_any_materials(materials_of_interest: List[str], bom_path=None, group
     # Dictionary to store figure objects
     figures = {}
     
+    # Prepare group_by string for filename
+    if isinstance(group_by, list):
+        group_by_filename = '_and_'.join([g.lower().replace(' ', '_') for g in group_by])
+    else:
+        group_by_filename = group_by.lower().replace(' ', '_')
+    
     # Analyze each material
     for material_col in material_cols:
         material_name = material_col.title()
-        output_path = os.path.join(output_dir, f"{material_name.lower().replace(' ', '_')}_by_{group_by.lower().replace(' ', '_')}.png")
+        output_path = os.path.join(output_dir, f"{material_name.lower().replace(' ', '_')}_by_{group_by_filename}.png")
         
         try:
             fig = create_material_intensity_boxplots(
                 df=raw_bom_df,
                 material_col=material_col,
                 group_by=group_by,
-                title=f"{material_name} Intensity by {group_by}",
+                title=f"{material_name} Intensity by {' and '.join(group_by) if isinstance(group_by, list) else group_by}",
                 output_path=output_path
             )
             figures[material_name] = fig
